@@ -1,3 +1,4 @@
+#include <linux/limits.h>
 #define _GNU_SOURCE
 #include <assert.h>
 #include <fcntl.h>
@@ -26,12 +27,14 @@ typedef char word_t[WORD_LENGTH];
 off_t fsize(const char* filename) {
   struct stat st;
   if (stat(filename, &st) == 0) return st.st_size;
+  perror("fsize()::stat()");
   return -1;
 }
 // return the file size given its descriptor
 off_t fsize_fd(int fd) {
   struct stat st;
   if (fstat(fd, &st) == 0) return st.st_size;
+  perror("fsize_fd()::fstat()");
   return -1;
 }
 // return the number of words in a file
@@ -45,17 +48,18 @@ size_t nb_words(const char* filename) {
   return size / WORD_LENGTH_W_NL;
 }
 // load each word from a file into a word array
-const char** load_words(const char* filename) {
+const word_t** load_words(const char* filename) {
   size_t n_words = nb_words(filename);
   if (n_words == 0) return NULL;
-  const char** words = NULL;
-  FILE* f            = fopen(filename, "r");
+  const word_t** words = NULL;
+  FILE* f              = fopen(filename, "r");
   if (f == NULL) return NULL;
-  words = malloc(n_words * sizeof(char*));
+  words = malloc(n_words * sizeof(word_t*));
   if (words == NULL) {
     fclose(f);
     return NULL;
   }
+  // buffer length includes length of word plus newline plus nul byte
   char buffer[WORD_LENGTH_W_NL + 1];
   for (size_t i = 0; i < n_words; i++) {
     if (fgets(buffer, sizeof(buffer), f) == NULL) {
@@ -65,13 +69,13 @@ const char** load_words(const char* filename) {
     }
     // remove '\n' from the end of the word
     buffer[WORD_LENGTH] = '\0';
-    words[i]            = strdup(buffer);
+    words[i]            = (word_t*) strdup(buffer);
   }
   fclose(f);
   return words;
 }
 // unload the word array
-void unload_words(const char** words, size_t n_words) {
+void unload_words(const word_t** words, size_t n_words) {
   if (words == NULL) return;
   for (size_t i = 0; i < n_words; i++) {
     free((void*) words[i]);
@@ -89,6 +93,12 @@ typedef struct {
   const char* lw;
   const char* mw;
 } file_t;
+#define WORD_FILES "word files"
+const char* get_word_files_path(const char* filename) {
+  static char path[PATH_MAX];
+  sprintf(path, "%s/%s", WORD_FILES, filename);
+  return path;
+}
 // n_words / size / filename / first_word / last_word / middle_word
 #define FILE_TABLE(FILE)                                                                                                                        \
   FILE(10657, 63941, "wordle-allowed-guesses.txt", "aahed", "zymic", "lours")                                                                   \
@@ -101,7 +111,6 @@ typedef struct {
 #define EXPAND_AS_FW(n_words, size, filename, fw, lw, mw)       fw,
 static const file_t files[]                                = { FILE_TABLE(EXPAND_AS_FILE_T) };
 static char* file_params[sizeof(files) / sizeof(files[0])] = { FILE_TABLE(EXPAND_AS_FILENAME) };
-// static char* fw_params[sizeof(files) / sizeof(files[0])]   = { FILE_TABLE(EXPAND_AS_FW) };
 #include <search.h>
 // compare function for lfind()
 int compare_file_t(const void* a, const void* b) {
@@ -122,7 +131,7 @@ static MunitResult stat_test(const MunitParameter params[], void* user_data) {
   // arrange
   file_t* file = (file_t*) user_data;
   // act
-  off_t size = fsize(file->filename);
+  off_t size = fsize(get_word_files_path(file->filename));
   // assert
   munit_assert_int(size, ==, file->size);
 
@@ -133,7 +142,7 @@ static MunitResult fstat_test(const MunitParameter params[], void* user_data) {
   (void) params;
   // arrange
   file_t* file = (file_t*) user_data;
-  int fd       = open(file->filename, O_RDONLY);
+  int fd       = open(get_word_files_path(file->filename), O_RDONLY);
   perror("open");
   munit_assert_int(fd, !=, -1);
   // act
@@ -159,9 +168,9 @@ static MunitResult fsize_test(const MunitParameter params[], void* user_data) {
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
   // act
-  off_t size = fsize(file->filename);
+  off_t size = fsize(get_word_files_path(file->filename));
   // assert
-  munit_assert_int(size, ==, file->size);
+  munit_assert_size(size, ==, file->size);
 
   return MUNIT_OK;
 }
@@ -172,7 +181,7 @@ static MunitResult nb_words_test(const MunitParameter params[], void* user_data)
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
   // act
-  size_t n_words = nb_words(file->filename);
+  size_t n_words = nb_words(get_word_files_path(file->filename));
   // assert
   munit_assert_size(n_words, ==, file->n_words);
 
@@ -187,10 +196,10 @@ static MunitResult load_words_test_fw(const MunitParameter params[], void* user_
   fputs("  ", stderr);
   munit_logf(MUNIT_LOG_INFO, PEACH "fw = %s" NO_COLOR, file->fw);
   // act
-  const char** words = load_words(file->filename);
+  const word_t** words = load_words(get_word_files_path(file->filename));
   // assert
   munit_assert_ptr_not_null(words);
-  munit_assert_string_equal(words[0], file->fw);
+  munit_assert_string_equal((const char*) words[0], file->fw);
 
   unload_words(words, file->n_words);
   return MUNIT_OK;
@@ -201,14 +210,14 @@ static MunitResult load_words_test_lw(const MunitParameter params[], void* user_
   // arrange
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
-  size_t n_words = nb_words(file->filename);
+  size_t n_words = nb_words(get_word_files_path(file->filename));
   fputs("  ", stderr);
   munit_logf(MUNIT_LOG_INFO, PEACH "lw = %s" NO_COLOR, file->lw);
   // act
-  const char** words = load_words(file->filename);
+  const word_t** words = load_words(get_word_files_path(file->filename));
   // assert
   munit_assert_ptr_not_null(words);
-  munit_assert_string_equal(words[n_words - 1], file->lw);
+  munit_assert_string_equal((const char*) words[n_words - 1], file->lw);
 
   unload_words(words, n_words);
   return MUNIT_OK;
@@ -219,14 +228,14 @@ static MunitResult load_words_test_mw(const MunitParameter params[], void* user_
   // arrange
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
-  size_t n_words = nb_words(file->filename);
+  size_t n_words = nb_words(get_word_files_path(file->filename));
   fputs("  ", stderr);
   munit_logf(MUNIT_LOG_INFO, PEACH "mw = %s" NO_COLOR, file->mw);
   // act
-  const char** words = load_words(file->filename);
+  const word_t** words = load_words(get_word_files_path(file->filename));
   // assert
   munit_assert_ptr_not_null(words);
-  munit_assert_string_equal(words[n_words / 2], file->mw);
+  munit_assert_string_equal((const char*) words[n_words / 2], file->mw);
 
   unload_words(words, n_words);
   return MUNIT_OK;
