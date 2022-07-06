@@ -9,7 +9,7 @@
             "type": "gdb",
             "request": "launch",
             "target": "./game",
-            "arguments": "--no-fork",
+            "arguments": "--no-fork --show-stderr",
             "cwd": "${workspaceRoot}",
             "valuesFormatting": "parseText"
         }
