@@ -8,7 +8,7 @@ ASAN:=n
 UBSAN:=n
 EXTENSION:=
 TEST_ENV:=
-CFLAGS:=
+CFLAGS:=-g
 AGGRESSIVE_WARNINGS=n
 
 ifeq ($(CC),pgcc)
@@ -42,6 +42,9 @@ ifneq ($(CC),pgcc)
                 CFLAGS+=-fsanitize=undefined
         endif
 endif
+
+game$(EXTENSION): munit.h munit.c game.c
+	$(CC) $(CFLAGS) -o $@ munit.c game.c
 
 example$(EXTENSION): munit.h munit.c example.c
 	$(CC) $(CFLAGS) -o $@ munit.c example.c

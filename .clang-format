@@ -1,0 +1,10 @@
+# [Clang-Format Style Options — Clang 15.0.0git documentation](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
+
+BasedOnStyle: Google # *or* BasedOnStyle: Chromium
+AlignEscapedNewlines: Right
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveMacros: Consecutive
+Cpp11BracedListStyle: false
+ColumnLimit: 145
+IndentPPDirectives: BeforeHash
+SpaceAfterCStyleCast: true

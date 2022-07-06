@@ -1,0 +1,67 @@
+# Prerequisites
+*.d
+
+# Other Assets
+*.tar
+*.gz
+# opt - [3.1 Installation](https://public.lanl.gov/jt/Software/opt/opt.html#SEC29#:~:text=3.1%20Installation)
+opt-3.19/
+info/
+.cache/
+*.opt
+
+# Object files
+lib/
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+lib/
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+bin/
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+example
+game
+
+# Debug files
+*.log
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
