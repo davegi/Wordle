@@ -1,7 +1,8 @@
-#include <linux/limits.h>
 #define _GNU_SOURCE
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <linux/limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,7 +55,8 @@ const word_t** load_words(const char* filename) {
   const word_t** words = NULL;
   FILE* f              = fopen(filename, "r");
   if (f == NULL) return NULL;
-  words = malloc(n_words * sizeof(word_t*));
+  // add room for NULL termination
+  words = malloc((n_words + 1) * sizeof(word_t*));
   if (words == NULL) {
     fclose(f);
     return NULL;
@@ -71,13 +73,16 @@ const word_t** load_words(const char* filename) {
     buffer[WORD_LENGTH] = '\0';
     words[i]            = (word_t*) strdup(buffer);
   }
+  // NULL terminate the array
+  words[n_words] = NULL;
+
   fclose(f);
   return words;
 }
 // unload the word array
-void unload_words(const word_t** words, size_t n_words) {
+void unload_words(const word_t** words) {
   if (words == NULL) return;
-  for (size_t i = 0; i < n_words; i++) {
+  for (size_t i = 0; words[i]; i++) {
     free((void*) words[i]);
   }
   free((void*) words);
@@ -126,10 +131,30 @@ const file_t* find_file(const char* filename) {
   return f;
 }
 //
+const file_t* munit_parameters_get_file(const MunitParameter params[]) {
+  const char* key = munit_parameters_get(params, "file");
+  munit_assert_ptr_not_null(key);
+  const file_t* file = find_file(key);
+  munit_assert_ptr_not_null(file);
+  return file;
+}
+//
+#define log_file_field(file, field, format)                                                                                                     \
+  fputs("  ", stderr);                                                                                                                          \
+  munit_logf(MUNIT_LOG_INFO, PEACH #field " = " format NO_COLOR, file->field);
+//
+#define log_file_word(file, word) log_file_field(file, word, "%s")
+//
+#define log_file(file)                                                                                                                          \
+  fputs("  ", stderr);                                                                                                                          \
+  munit_logf(MUNIT_LOG_INFO, PEACH "n_words = %lu" NO_COLOR, file->n_words);
+//
 static MunitResult stat_test(const MunitParameter params[], void* user_data) {
-  (void) params;
+  (void) user_data;
   // arrange
-  file_t* file = (file_t*) user_data;
+  const file_t* file = munit_parameters_get_file(params);
+  munit_assert_ptr_not_null(file);
+  log_file(file);
   // act
   off_t size = fsize(get_word_files_path(file->filename));
   // assert
@@ -139,11 +164,13 @@ static MunitResult stat_test(const MunitParameter params[], void* user_data) {
 }
 //
 static MunitResult fstat_test(const MunitParameter params[], void* user_data) {
-  (void) params;
+  (void) user_data;
   // arrange
-  file_t* file = (file_t*) user_data;
-  int fd       = open(get_word_files_path(file->filename), O_RDONLY);
-  perror("open");
+  const file_t* file = munit_parameters_get_file(params);
+  munit_assert_ptr_not_null(file);
+  log_file(file);
+  int fd = open(get_word_files_path(file->filename), O_RDONLY);
+  if (-1 == fd) perror("open");
   munit_assert_int(fd, !=, -1);
   // act
   off_t size = fsize_fd(fd);
@@ -154,19 +181,12 @@ static MunitResult fstat_test(const MunitParameter params[], void* user_data) {
   return MUNIT_OK;
 }
 //
-const file_t* munit_parameters_get_file(const MunitParameter params[]) {
-  const char* key = munit_parameters_get(params, "file");
-  munit_assert_ptr_not_null(key);
-  const file_t* file = find_file(key);
-  munit_assert_ptr_not_null(file);
-  return file;
-}
-//
 static MunitResult fsize_test(const MunitParameter params[], void* user_data) {
   (void) user_data;
   // arrange
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
+  log_file(file);
   // act
   off_t size = fsize(get_word_files_path(file->filename));
   // assert
@@ -180,6 +200,7 @@ static MunitResult nb_words_test(const MunitParameter params[], void* user_data)
   // arrange
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
+  log_file(file);
   // act
   size_t n_words = nb_words(get_word_files_path(file->filename));
   // assert
@@ -188,20 +209,32 @@ static MunitResult nb_words_test(const MunitParameter params[], void* user_data)
   return MUNIT_OK;
 }
 //
+static void* load_words_setup(const MunitParameter params[], void* user_data) {
+  (void) user_data;
+
+  const file_t* file = munit_parameters_get_file(params);
+  munit_assert_ptr_not_null(file);
+  log_file(file);
+  const word_t** words = load_words(get_word_files_path(file->filename));
+  munit_assert_ptr_not_null(words);
+
+  return (void*) words;
+}
+//
+static void load_words_tear_down(void* fixture) { unload_words(fixture); }
+//
 static MunitResult load_words_test_fw(const MunitParameter params[], void* user_data) {
   (void) user_data;
   // arrange
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
-  fputs("  ", stderr);
-  munit_logf(MUNIT_LOG_INFO, PEACH "fw = %s" NO_COLOR, file->fw);
+  log_file_word(file, fw);
   // act
-  const word_t** words = load_words(get_word_files_path(file->filename));
+  const word_t** words = (const word_t**) user_data;
   // assert
   munit_assert_ptr_not_null(words);
   munit_assert_string_equal((const char*) words[0], file->fw);
 
-  unload_words(words, file->n_words);
   return MUNIT_OK;
 }
 //
@@ -211,15 +244,13 @@ static MunitResult load_words_test_lw(const MunitParameter params[], void* user_
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
   size_t n_words = nb_words(get_word_files_path(file->filename));
-  fputs("  ", stderr);
-  munit_logf(MUNIT_LOG_INFO, PEACH "lw = %s" NO_COLOR, file->lw);
+  log_file_word(file, lw);
   // act
-  const word_t** words = load_words(get_word_files_path(file->filename));
+  const word_t** words = (const word_t**) user_data;
   // assert
   munit_assert_ptr_not_null(words);
   munit_assert_string_equal((const char*) words[n_words - 1], file->lw);
 
-  unload_words(words, n_words);
   return MUNIT_OK;
 }
 //
@@ -229,25 +260,23 @@ static MunitResult load_words_test_mw(const MunitParameter params[], void* user_
   const file_t* file = munit_parameters_get_file(params);
   munit_assert_ptr_not_null(file);
   size_t n_words = nb_words(get_word_files_path(file->filename));
-  fputs("  ", stderr);
-  munit_logf(MUNIT_LOG_INFO, PEACH "mw = %s" NO_COLOR, file->mw);
+  log_file_word(file, mw);
   // act
-  const word_t** words = load_words(get_word_files_path(file->filename));
+  const word_t** words = (const word_t**) user_data;
   // assert
   munit_assert_ptr_not_null(words);
   munit_assert_string_equal((const char*) words[n_words / 2], file->mw);
 
-  unload_words(words, n_words);
   return MUNIT_OK;
 }
 
-static void* setup(const MunitParameter params[], void* user_data) {
-  (void) params;
-  (void) user_data;
-  static int i = 0;
+// static void* setup(const MunitParameter params[], void* user_data) {
+//   (void) params;
+//   (void) user_data;
+//   static int i = 0;
 
-  return (void*) (uintptr_t) &files[i];
-}
+//   return (void*) (uintptr_t) &files[i];
+// }
 
 // static void test_compare_tear_down(void* fixture) { munit_assert_ptr_equal(fixture, (void*) (uintptr_t) 0xdeadbeef); }
 
@@ -260,14 +289,16 @@ static MunitParameterEnum test_params[] = {
   { NULL },
 };
 
-static MunitTest test_suite_tests[] = { munit_ex_register_test(stat_test, setup, NULL, MUNIT_TEST_OPTION_NONE, NULL),
-                                        munit_ex_register_test(fstat_test, setup, NULL, MUNIT_TEST_OPTION_NONE, NULL),
-                                        munit_ex_register_test(fsize_test, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
-                                        munit_ex_register_test(nb_words_test, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
-                                        munit_ex_register_test(load_words_test_fw, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
-                                        munit_ex_register_test(load_words_test_lw, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
-                                        munit_ex_register_test(load_words_test_mw, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
-                                        { NULL } };
+static MunitTest test_suite_tests[] = {
+  munit_ex_register_test(stat_test, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
+  munit_ex_register_test(fstat_test, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
+  munit_ex_register_test(fsize_test, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
+  munit_ex_register_test(nb_words_test, NULL, NULL, MUNIT_TEST_OPTION_NONE, test_params),
+  munit_ex_register_test(load_words_test_fw, load_words_setup, load_words_tear_down, MUNIT_TEST_OPTION_NONE, test_params),
+  munit_ex_register_test(load_words_test_lw, load_words_setup, load_words_tear_down, MUNIT_TEST_OPTION_NONE, test_params),
+  munit_ex_register_test(load_words_test_mw, load_words_setup, load_words_tear_down, MUNIT_TEST_OPTION_NONE, test_params),
+  { NULL }
+};
 
 static const MunitSuite test_suite = { munit_ex_register_suite_easy(stat, test_suite_tests) };
 

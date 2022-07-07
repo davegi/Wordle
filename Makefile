@@ -46,6 +46,9 @@ endif
 game$(EXTENSION): munit.h munit.c game.c
 	$(CC) $(CFLAGS) -o $@ munit.c game.c
 
+valgrind:
+	valgrind --leak-check=full --show-leak-kinds=all -s ./game --no-fork --show-stderr # --no-fork
+
 example$(EXTENSION): munit.h munit.c example.c
 	$(CC) $(CFLAGS) -o $@ munit.c example.c
 
