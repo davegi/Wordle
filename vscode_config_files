@@ -1,0 +1,9 @@
+- Fake file used to nest files in VS Code's Explorer:
+``` json
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+    "explorer.fileNesting.patterns": {
+        "vscode_config_files": ".*, *.json, Makefile, project.conf",
+        "README.md": "*.md, *.png, LICENSE"
+    },
+```

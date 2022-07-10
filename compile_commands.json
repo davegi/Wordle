@@ -1,0 +1,67 @@
+[
+    {
+        "directory": "/workspace/ThreadEx/",
+        "command": "/usr/bin/gcc -c test/main.c -o bin/threadex_test_runner -g3 -DDEBUG=1 -O3 -std=gnu11 -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -Wno-sign-compare -Wno-unused-parameter -Wno-unused-but-set-variable -pedantic -Wno-readability-misleading-indentation -Irepos/log.c/src -Irepos/opt -Irepos/metalang99/include -pthread -L-lreadline /workspace/ThreadEx/lib",
+        "file": "test/main.c"
+    },
+    {
+        "directory": "/workspace/ThreadEx/",
+        "command": "/usr/bin/gcc -c test/cla.c -o lib/cla.o -g3 -DDEBUG=1 -O3 -std=gnu11 -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -Wno-sign-compare -Wno-unused-parameter -Wno-unused-but-set-variable -pedantic -Wno-readability-misleading-indentation -Irepos/log.c/src -Irepos/opt -Irepos/metalang99/include -pthread -L-lreadline /workspace/ThreadEx/lib",
+        "file": "test/cla.c"
+    },
+    {
+        "directory": "/workspace/ThreadEx/",
+        "command": "/usr/bin/gcc -c src/main.c -o bin/threadex -g3 -DDEBUG=1 -O3 -std=gnu11 -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -Wno-sign-compare -Wno-unused-parameter -Wno-unused-but-set-variable -pedantic -Wno-readability-misleading-indentation -Irepos/log.c/src -Irepos/opt -Irepos/metalang99/include -pthread -L-lreadline /workspace/ThreadEx/lib",
+        "file": "src/main.c"
+    },
+    {
+        "directory": "/workspace/ThreadEx/",
+        "command": "/usr/bin/gcc -c src/opt.c -o lib/opt.o -g3 -DDEBUG=1 -O3 -DHAVE_STRDUP -DHAVE_UNISTD_H -DHAVE_LONGJMP -DHAVE_SIGNAL -DHAVE_READLINE -std=gnu11  -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -pedantic -fdiagnostics-show-option  -Iinclude -pthread -L/workspace/ThreadEx/lib",
+        "file": "src/opt.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/rxi-log-log.c -o lib/rxi-log-log.o -g3 -DDEBUG=1 -O3 -D_ARGP_ -std=gnu11 -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -Wno-sign-compare -Wno-unused-parameter -Wno-unused-but-set-variable -pedantic -Wno-readability-misleading-indentation -Iinclude -Iinclude/rxi-log -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/rxi-log-log.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/yksz-c-logger-logger.c -o lib/yksz-c-logger-logger.o -g3 -DDEBUG=1 -O3 -D_ARGP_ -std=gnu11 -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -Wno-sign-compare -Wno-unused-parameter -Wno-unused-but-set-variable -pedantic -Wno-readability-misleading-indentation -Iinclude -Iinclude/yksz-c-logger -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/yksz-c-logger-logger.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/yksz-c-logger-loggerconf.c -o lib/yksz-c-logger-loggerconf.o -g3 -DDEBUG=1 -O3 -D_ARGP_ -std=gnu11 -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -Wno-sign-compare -Wno-unused-parameter -Wno-unused-but-set-variable -pedantic -Wno-readability-misleading-indentation -Iinclude -Iinclude/yksz-c-logger -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/yksz-c-logger-loggerconf.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/argp.c -o lib/argp.o -g3 -DDEBUG=1 -O3 -D_ARGP_ -std=gnu11  -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -pedantic -fdiagnostics-show-option  -Iinclude -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/argp.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/COVID_test.c -o lib/COVID_test.o -g3 -DDEBUG=1 -O3 -U_ARGP_ -std=gnu11  -fstack-protector-all -Wstack-protector -Wno-comment -Wno-missing-field-initializers -Wall -Wextra -pedantic -fdiagnostics-show-option  -Iinclude -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/COVID_test.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/main.c -o lib/main.o -g3 -DDEBUG=1 -O3 -D_ARGP_ -std=gnu11  -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -pedantic -fdiagnostics-show-option -Iinclude -I../include -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/main.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/nt_logger.c -o lib/nt_logger.o -g3 -DDEBUG=1 -O3 -D_ARGP_ -std=gnu11  -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -pedantic -fdiagnostics-show-option -Iinclude -I../include -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/nt_logger.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/opt.c -o lib/opt.o -g3 -DDEBUG=1 -O3 -D_ARGP_ -std=gnu11  -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -pedantic -fdiagnostics-show-option  -Iinclude -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/opt.c"
+    },
+    {
+        "directory": "/workspace/COVID-19-Test/",
+        "command": "/usr/bin/gcc -c src/parse_time_range.c -o lib/parse_time_range.c.o -g3 -DDEBUG=1 -O3 -D_ARGP_ -std=gnu11  -fstack-protector-all -Wstack-protector -Wno-comment -Wall -Wextra -Wno-missing-field-initializers -pedantic -fdiagnostics-show-option  -Iinclude -pthread -L/workspace/COVID-19-Test/lib",
+        "file": "src/parse_time_range.c"
+    }
+]
