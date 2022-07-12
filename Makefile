@@ -8,7 +8,7 @@ ASAN:=n
 UBSAN:=n
 EXTENSION:=
 TEST_ENV:=
-CFLAGS:=-g -DMUNIT_TEST_NAME_LEN=45
+CFLAGS:=-g -DMUNIT_TEST_NAME_LEN=45 -D_GNU_SOURCE
 AGGRESSIVE_WARNINGS=n
 
 ifeq ($(CC),pgcc)
@@ -43,8 +43,8 @@ ifneq ($(CC),pgcc)
         endif
 endif
 
-game$(EXTENSION): munit.h munit.c game.c
-	$(CC) $(CFLAGS) -o $@ munit.c game.c
+game$(EXTENSION): munit.h munit.c game.c game_ut.c
+	$(CC) $(CFLAGS) -o $@ munit.c game_ut.c # game.c 
 
 valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all -s ./game --no-fork --show-stderr # --no-fork
