@@ -1,24 +1,9 @@
+#include "game.h"
+
 #include <assert.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-//
-#define ESC          "\x1b"
-#define CSI          ESC "["
-#define RGB(r, g, b) CSI "38;2;" #r ";" #g ";" #b "m"
-#define YELLOW       RGB(255, 255, 0)
-#define PEACH        RGB(255, 203, 164)  // 255, 218, 185
-#define NO_COLOR     CSI "0m"
-#define BOLD         CSI "1m"
-#define ITALIC       CSI "3m"
-#define NO_ITALIC    CSI "23m"
-
-#define WORD_LENGTH      5
-#define WORD_LENGTH_W_NL (WORD_LENGTH + 1)
-typedef char word_t[WORD_LENGTH];
-
 // return the file size given its name
 off_t fsize(const char* filename) {
   struct stat st;
@@ -81,4 +66,36 @@ void unload_words(const word_t** words) {
     free((void*) words[i]);
   }
   free((void*) words);
+}
+//
+size_t color_word(const char* guess, const char* secret, colors_t colors) {
+  assert(guess);
+  assert(secret);
+  assert(colors);
+  // assume no matches
+  memset(colors, black, sizeof(colors_t));
+  // compare each letter in the guess to each letter in the secret word
+  // if the letters match, set the color to yellow,
+  // if the letters are in the same position, set the color to green,
+  // else set the color to grey
+  size_t n_matches = 0;
+  for (size_t i = 0; i < WORD_LENGTH; i++) {
+    char guess_letter = guess[i];
+    for (size_t j = 0; j < WORD_LENGTH; j++) {
+      char secret_letter = secret[j];
+      // colors[i]          = grey;
+      if (guess_letter == secret_letter) {
+        colors[i] = yellow;
+        if (i == j) {
+          n_matches++;
+          colors[i] = green;
+          break;
+        }
+      }
+    }
+    colors[i] = colors[i] == black ? grey : colors[i];
+  }
+  // if (n_matches) n_matches--;
+  // assert(n_matches <= WORD_LENGTH);
+  return n_matches;
 }
